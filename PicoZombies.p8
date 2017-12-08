@@ -69,6 +69,7 @@ function map_collision(
    end
   end
  end
+ return false
 end
 
 function check_object_collision(
@@ -192,7 +193,7 @@ function get_floor(player)
 end
 -->8
 function update_enemies()
-	if t%90==0 and t<3600 then
+	if t%90==0 and t<3600  then
 		spawn_enemy()
 	end
 	for enemy in all(enemies) do
@@ -315,34 +316,63 @@ function look_for_jump(
 		local x=(2*enemy.x
 			+enemy.width)/2+i*8
 		x=flr(x/8)*8+4
+		if map_collision(x,y,x,y,0)
+			==false
+		then
+			break
+		end
 		if map_collision(x,y,x,y,2)
  	then
  		local spot={x=x,y=y}
- 		count=count+1
+ 		count+=1
  		spots[count]=spot
  	end
- 	x=(2*enemy.x
+ end
+ for i=1,16 do
+ 	local x=(2*enemy.x
 			+enemy.width)/2-i*8
 		x=flr(x/8)*8+4
+		if map_collision(x,y,x,y,0)
+			==false
+		then
+			break
+		end
  	if	map_collision(x,y,x,y,2)
  	then
  		local spot={x=x,y=y}
- 		count=count+1
+ 		count+=1
  		spots[count]=spot
  	end
 	end
+	test=count
 	if count>0 then
-	local closest_distance=
-		get_distance(spots[1],player)
-	local index=1
-		for i=2,count do
- 		local distance=
- 			get_distance(spots[i],
- 			player)
- 		if distance<closest_distance
- 		then
- 			clostest_distance=distance
- 			index=i
+		local index=1
+		if player.floor-enemy.floor>1
+ 	then
+ 		local closest_distance=
+ 			get_distance(spots[1],enemy)
+ 		for i=2,count do
+  		local distance=
+  			get_distance(spots[i],
+  			enemy)
+  		if distance<closest_distance
+  		then
+  			clostest_distance=distance
+  			index=i
+  		end
+  	end
+  else
+  	local closest_distance=
+ 			get_distance(spots[1],player)
+ 		for i=2,count do
+  		local distance=
+  			get_distance(spots[i],
+  			player)
+  		if distance<closest_distance
+  		then
+  			clostest_distance=distance
+  			index=i	
+  		end
  		end
 		end 
 		if on_jump_box(
@@ -401,7 +431,7 @@ function look_for_drop(
 		if map_collision(x,y,x,y,1)
  	then
  		local spot={x=x,y=y}
- 		count=count+1
+ 		count+=1
  		spots[count]=spot
  	end
  	x=(2*enemy.x
@@ -410,7 +440,7 @@ function look_for_drop(
  	if	map_collision(x,y,x,y,1)
  	then
  		local spot={x=x,y=y}
- 		count=count+1
+ 		count+=1
  		spots[count]=spot
  	end
 	end
