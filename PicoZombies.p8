@@ -344,7 +344,6 @@ function look_for_jump(
  		spots[count]=spot
  	end
 	end
-	test=count
 	if count>0 then
 		local index=1
 		if player.floor-enemy.floor>1
