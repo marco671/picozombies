@@ -4,6 +4,7 @@ __lua__
 function _init()
 	camera(16,32)
 	t=0
+	state = 1
 	player0={number=0,sprite=1,
 		x=50,y=140,width=2,height=7,
 		dx=0.5,dy=1,left=false,
@@ -29,18 +30,28 @@ function _init()
 	bullets={}
 	sparks={}
 	weapon_spawns={}
+	enemy_count = 0
 	
 end
 -->8
 function _update()
 	t+=1
+	if player_count >= 0 then
+		state = 1
+	end
+	if t > 30*120 and enemy_count == 0 then
+		state = 2
+	end
+	if player_count <= 0 then
+		state = 0
+	end
 	update_players()
 	update_bullets()	
 	update_enemies()
 	update_weapon_spawns()
 end
 
-
+-->8
 function map_collision(
 	x1,y1,x2,y2,flag)
  x1=x1/8
@@ -186,6 +197,7 @@ function update_enemies()
 	end
 	for enemy in all(enemies) do
 		update_enemy(enemy)
+		check_hp(enemy)
 	end
 end
 
@@ -213,8 +225,8 @@ function spawn_enemy()
   jump=false,grounded=false,
   sprite_holder=sprite,floor=0,
   jump_left=false}
- add(enemies,minion)
- --enemy_count += 1
+  add(enemies,minion)
+  enemy_count += 1
 end
 
 
@@ -227,7 +239,6 @@ function update_enemy(enemy)
  		bullet.delete = true
  		enemy.hp-=bullet.damage
  		enemy.sprite=22
- 		check_hp(enemy)
  	end
  end
  
@@ -322,13 +333,11 @@ function look_for_jump(
 	end
 	if count>0 then
 	local closest_distance=
-		get_distance(spots[1],enemy)+
 		get_distance(spots[1],player)
 	local index=1
 		for i=2,count do
  		local distance=
- 			get_distance(spots[i],enemy)
- 			+0.9*get_distance(spots[i],
+ 			get_distance(spots[i],
  			player)
  		if distance<closest_distance
  		then
@@ -428,6 +437,7 @@ end
 function check_hp(enemy)
 	if enemy.hp<=0 then
 		del(enemies,enemy)
+		enemy_count -= 1
 	end
 end
 -->8
@@ -697,26 +707,15 @@ function spawn_rifle(x,y)
 end
 -->8
 function _draw()
-	cls()
-	map(0,0,0,0,60,60)
-	print(t)
-	hud()
-	for player in all(players) do
-		draw_player(player)
+	if state == 1 then
+		game_state()
 	end
-	draw_weapon_spawns()
-	draw_enemies()
-	--print(test,64,64,5)
-	--print(test1,64,74,5)
-	--[[print(test2,64,84,5)
-	print(test3,64,94,2)
-	print(test4,96,94,3)
-	print(test5,96,104,3)]]
-	draw_bullets()
-	draw_sparks()
-	local x1=127
---[[	rect(player0.x-4,player0.y+3,
-	 x1,player0.y+4) ]]
+	if state == 2 then
+		win_state()
+	end
+	if state == 0 then
+		lose_state()
+	end
 end
 
 function draw_weapon_spawns()
@@ -794,14 +793,67 @@ function draw_enemies()
 end
 
 function hud()
-	local ammocount = 24
-	for i=0, player1.gun.ammo do
-	if(player1.gun.ammo !=0) then
-		spr(59, ammocount, 32)
-		ammocount += 1
-	end
-end
 	
+	if player0.gun.ammo < 5 then
+		color(8)
+		print(player0.gun.ammo, 24, 32)
+	elseif player0.gun.ammo < 10 then 
+		color(10)
+		print(player0.gun.ammo, 24, 32)
+	elseif player0.gun.ammo <= 30 then 
+		color(11)
+		print(player0.gun.ammo, 24, 32)
+	end 
+	if player1.gun.ammo < 5 then
+		color(8)
+		print(player1.gun.ammo, 128, 32)
+	elseif player1.gun.ammo < 10 then 
+		color(10)
+		print(player1.gun.ammo, 128, 32)
+	elseif player1.gun.ammo <= 30 then 
+		color(11)
+		print(player1.gun.ammo, 128, 32)
+	end 
+	color(10)	
+end
+
+function win_state()
+	cls()
+	print("ya yeet baby", 64, 96)
+	print("press ctrl + r to play again", 32, 128)
+end
+
+function lose_state()
+	cls()
+	print("you're a loser", 64, 96)
+	print("press ctrl + r to play again", 32, 128)
+end
+
+function game_state()
+	cls()
+	map(0,0,0,0,60,60)
+	if t<3600 then
+		print(flr(t/30), 74, 32)
+	else 
+		print("finish them!" , 60, 32)
+	end
+	hud()
+	for player in all(players) do
+		draw_player(player)
+	end
+	draw_weapon_spawns()
+	draw_enemies()
+	--print(test,64,64,5)
+	--print(test1,64,74,5)
+	--[[print(test2,64,84,5)
+	print(test3,64,94,2)
+	print(test4,96,94,3)
+	print(test5,96,104,3)]]
+	draw_bullets()
+	draw_sparks()
+	local x1=127
+--[[	rect(player0.x-4,player0.y+3,
+	 x1,player0.y+4) ]]
 end
 __gfx__
 000000000500000040000000828888885555555500000000080000000800000088fff88400000000000000003b33333355555555828888880000000000000000
